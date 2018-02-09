@@ -25,8 +25,11 @@ public class MainActivity extends AppCompatActivity {
             public void handle(String time) {
                 Toast.makeText(getApplicationContext(), time, Toast.LENGTH_LONG).show();
             }
-        }, "1989-01-30 00:00", "2018-12-31 00:00");
-
+        }, "2016-01-30 00:00", "2018-12-31 00:00");
+        timeSelector.setIsLoop(false);
+        timeSelector.setCancelable(true);
+        timeSelector.setDefaultDate("2017-11-31 20:30");
+        timeSelector.setPrimaryColor(0xFF458909);
 //        timeSelector.setIsLoop(false);
     }
 

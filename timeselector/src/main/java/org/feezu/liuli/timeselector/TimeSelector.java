@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -77,6 +78,7 @@ public class TimeSelector {
     private int startYear, startMonth, startDay, startHour, startMininute, endYear, endMonth, endDay, endHour, endMininute, minute_workStart, minute_workEnd, hour_workStart, hour_workEnd;
     private boolean spanYear, spanMon, spanDay, spanHour, spanMin;
     private Calendar selectedCalender = Calendar.getInstance();
+    private Calendar defaultCalender;
     private final long ANIMATORDELAY = 200L;
     private final long CHANGEDELAY = 90L;
     private String workStart_str;
@@ -88,6 +90,10 @@ public class TimeSelector {
     private TextView hour_text;
     private TextView minute_text;
 
+    private int mPrimaryColor = 0x333333;
+    private boolean mCancelable = false;
+    private DialogInterface.OnDismissListener mOnDismissListener;
+
 
     public TimeSelector(Context context, ResultHandler resultHandler, String startDate, String endDate) {
         this.context = context;
@@ -96,6 +102,8 @@ public class TimeSelector {
         endCalendar = Calendar.getInstance();
         startCalendar.setTime(DateUtil.parse(startDate, FORMAT_STR));
         endCalendar.setTime(DateUtil.parse(endDate, FORMAT_STR));
+        selectedCalender.setTime(startCalendar.getTime());
+        mPrimaryColor = context.getResources().getColor(R.color.colorPrimary);
         initDialog();
         initView();
     }
@@ -117,6 +125,7 @@ public class TimeSelector {
         initParameter();
         initTimer();
         addListener();
+        initDefaultDate();
         seletorDialog.show();
 
 
@@ -125,14 +134,24 @@ public class TimeSelector {
     private void initDialog() {
         if (seletorDialog == null) {
             seletorDialog = new Dialog(context, R.style.time_dialog);
-            seletorDialog.setCancelable(false);
+            seletorDialog.setCancelable(mCancelable);
             seletorDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             seletorDialog.setContentView(R.layout.dialog_selector);
+            seletorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    if (mOnDismissListener != null) {
+                        mOnDismissListener.onDismiss(dialog);
+                    }
+                }
+            });
             Window window = seletorDialog.getWindow();
             window.setGravity(Gravity.BOTTOM);
+
             WindowManager.LayoutParams lp = window.getAttributes();
             int width = ScreenUtil.getInstance(context).getScreenWidth();
             lp.width = width;
+            lp.windowAnimations = R.style.SheetDialogAnimation;
             window.setAttributes(lp);
         }
     }
@@ -163,6 +182,7 @@ public class TimeSelector {
             }
         });
 
+        initPrimaryColor();
     }
 
     private void initParameter() {
@@ -181,7 +201,7 @@ public class TimeSelector {
         spanDay = (!spanMon) && (startDay != endDay);
         spanHour = (!spanDay) && (startHour != endHour);
         spanMin = (!spanHour) && (startMininute != endMininute);
-        selectedCalender.setTime(startCalendar.getTime());
+
     }
 
     private void initTimer() {
@@ -374,7 +394,7 @@ public class TimeSelector {
             @Override
             public void onSelect(String text) {
                 selectedCalender.set(Calendar.YEAR, Integer.parseInt(text));
-                monthChange();
+                monthChange(true);
 
 
             }
@@ -384,7 +404,7 @@ public class TimeSelector {
             public void onSelect(String text) {
                 selectedCalender.set(Calendar.DAY_OF_MONTH, 1);
                 selectedCalender.set(Calendar.MONTH, Integer.parseInt(text) - 1);
-                dayChange();
+                dayChange(true);
 
 
             }
@@ -393,7 +413,7 @@ public class TimeSelector {
             @Override
             public void onSelect(String text) {
                 selectedCalender.set(Calendar.DAY_OF_MONTH, Integer.parseInt(text));
-                hourChange();
+                hourChange(true);
 
             }
         });
@@ -401,7 +421,7 @@ public class TimeSelector {
             @Override
             public void onSelect(String text) {
                 selectedCalender.set(Calendar.HOUR_OF_DAY, Integer.parseInt(text));
-                minuteChange();
+                minuteChange(true);
 
 
             }
@@ -423,11 +443,14 @@ public class TimeSelector {
         day_pv.setData(day);
         hour_pv.setData(hour);
         minute_pv.setData(minute);
+
         year_pv.setSelected(0);
         month_pv.setSelected(0);
         day_pv.setSelected(0);
         hour_pv.setSelected(0);
         minute_pv.setSelected(0);
+
+
         excuteScroll();
     }
 
@@ -439,7 +462,28 @@ public class TimeSelector {
         minute_pv.setCanScroll(minute.size() > 1 && (scrollUnits & SCROLLTYPE.MINUTE.value) == SCROLLTYPE.MINUTE.value);
     }
 
-    private void monthChange() {
+    private void initDefaultDate() {
+        if (defaultCalender == null) {
+            return;
+        }
+
+        String defMonth = fomatTimeUnit(defaultCalender.get(Calendar.MONTH) + 1);
+        String defDay = fomatTimeUnit(defaultCalender.get(Calendar.DAY_OF_MONTH));
+        String defHour = fomatTimeUnit(defaultCalender.get(Calendar.HOUR_OF_DAY));
+        String defMin = fomatTimeUnit(defaultCalender.get(Calendar.MINUTE));
+        selectedCalender.setTime(defaultCalender.getTime());
+        year_pv.setSelected(defaultCalender.get(Calendar.YEAR) + "");
+        monthChange(false);
+        month_pv.setSelected(defMonth);
+        dayChange(false);
+        day_pv.setSelected(defDay);
+        hourChange(false);
+        hour_pv.setSelected(defHour);
+        minuteChange(false);
+        minute_pv.setSelected(defMin);
+    }
+
+    private void monthChange(boolean anim) {
 
         month.clear();
         int selectedYear = selectedCalender.get(Calendar.YEAR);
@@ -459,18 +503,21 @@ public class TimeSelector {
         selectedCalender.set(Calendar.MONTH, Integer.parseInt(month.get(0)) - 1);
         month_pv.setData(month);
         month_pv.setSelected(0);
-        excuteAnimator(ANIMATORDELAY, month_pv);
 
-        month_pv.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                dayChange();
-            }
-        }, CHANGEDELAY);
+        if (anim) {
+            excuteAnimator(ANIMATORDELAY, month_pv);
+
+            month_pv.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    dayChange(true);
+                }
+            }, CHANGEDELAY);
+        }
 
     }
 
-    private void dayChange() {
+    private void dayChange(boolean anim) {
 
         day.clear();
         int selectedYear = selectedCalender.get(Calendar.YEAR);
@@ -491,17 +538,19 @@ public class TimeSelector {
         selectedCalender.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day.get(0)));
         day_pv.setData(day);
         day_pv.setSelected(0);
-        excuteAnimator(ANIMATORDELAY, day_pv);
+        if (anim) {
+            excuteAnimator(ANIMATORDELAY, day_pv);
 
-        day_pv.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                hourChange();
-            }
-        }, CHANGEDELAY);
+            day_pv.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hourChange(true);
+                }
+            }, CHANGEDELAY);
+        }
     }
 
-    private void hourChange() {
+    private void hourChange(boolean anim) {
         if ((scrollUnits & SCROLLTYPE.HOUR.value) == SCROLLTYPE.HOUR.value) {
             hour.clear();
             int selectedYear = selectedCalender.get(Calendar.YEAR);
@@ -526,18 +575,22 @@ public class TimeSelector {
             selectedCalender.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour.get(0)));
             hour_pv.setData(hour);
             hour_pv.setSelected(0);
-            excuteAnimator(ANIMATORDELAY, hour_pv);
-        }
-        hour_pv.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                minuteChange();
+            if (anim) {
+                excuteAnimator(ANIMATORDELAY, hour_pv);
             }
-        }, CHANGEDELAY);
+        }
+        if (anim) {
+            hour_pv.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    minuteChange(true);
+                }
+            }, CHANGEDELAY);
+        }
 
     }
 
-    private void minuteChange() {
+    private void minuteChange(boolean anim) {
         if ((scrollUnits & SCROLLTYPE.MINUTE.value) == SCROLLTYPE.MINUTE.value) {
             minute.clear();
             int selectedYear = selectedCalender.get(Calendar.YEAR);
@@ -569,7 +622,9 @@ public class TimeSelector {
             selectedCalender.set(Calendar.MINUTE, Integer.parseInt(minute.get(0)));
             minute_pv.setData(minute);
             minute_pv.setSelected(0);
-            excuteAnimator(ANIMATORDELAY, minute_pv);
+            if (anim) {
+                excuteAnimator(ANIMATORDELAY, minute_pv);
+            }
 
         }
         excuteScroll();
@@ -631,5 +686,53 @@ public class TimeSelector {
         this.day_pv.setIsLoop(isLoop);
         this.hour_pv.setIsLoop(isLoop);
         this.minute_pv.setIsLoop(isLoop);
+    }
+
+    public void setPrimaryColor(int color) {
+        mPrimaryColor = color;
+        initPrimaryColor();
+    }
+
+    private void initPrimaryColor() {
+        if (tv_cancle != null) {
+            tv_cancle.setTextColor(mPrimaryColor);
+        }
+        if (tv_select != null) {
+            tv_select.setTextColor(mPrimaryColor);
+        }
+        if (tv_title != null) {
+            tv_title.setTextColor(mPrimaryColor);
+        }
+        if (year_pv != null) {
+            year_pv.setPrimaryColor(mPrimaryColor);
+        }
+        if (month_pv != null) {
+            month_pv.setPrimaryColor(mPrimaryColor);
+        }
+        if (day_pv != null) {
+            day_pv.setPrimaryColor(mPrimaryColor);
+        }
+        if (hour_pv != null) {
+            hour_pv.setPrimaryColor(mPrimaryColor);
+        }
+        if (minute_pv != null) {
+            minute_pv.setPrimaryColor(mPrimaryColor);
+        }
+    }
+
+    public void setCancelable(boolean able) {
+        if (seletorDialog != null) {
+            seletorDialog.setCancelable(able);
+        }
+    }
+
+    public void setOnDismissListener(DialogInterface.OnDismissListener listener) {
+        mOnDismissListener = listener;
+    }
+
+    public void setDefaultDate(String defaultDate) {
+        defaultCalender = Calendar.getInstance();
+        defaultCalender.setTime(DateUtil.parse(defaultDate, FORMAT_STR));
+
     }
 }

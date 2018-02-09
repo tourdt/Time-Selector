@@ -33,11 +33,6 @@ public class ScreenUtil {
 
 
 
-
-
-	/**
-	 * 得到手机屏幕的宽度, pix单位
-	 */
 	public int getScreenWidth() {
 		return width;
 	}

@@ -19,6 +19,7 @@ import org.feezu.liuli.timeselector.view.PickerView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by liuli on 2015/11/27.
@@ -26,7 +27,7 @@ import java.util.Calendar;
 public class TimeSelector {
 
     public interface ResultHandler {
-        void handle(String time);
+        void handle(Date time);
     }
 
     public enum SCROLLTYPE {
@@ -59,7 +60,7 @@ public class TimeSelector {
     private int scrollUnits = SCROLLTYPE.HOUR.value + SCROLLTYPE.MINUTE.value;
     private ResultHandler handler;
     private Context context;
-    private final String FORMAT_STR = "yyyy-MM-dd HH:mm";
+    public static final String FORMAT_STR = "yyyy-MM-dd HH:mm";
 
     private Dialog seletorDialog;
     private PickerView year_pv;
@@ -96,16 +97,10 @@ public class TimeSelector {
 
 
     public TimeSelector(Context context, ResultHandler resultHandler, String startDate, String endDate) {
-        this.context = context;
-        this.handler = resultHandler;
-        startCalendar = Calendar.getInstance();
-        endCalendar = Calendar.getInstance();
-        startCalendar.setTime(DateUtil.parse(startDate, FORMAT_STR));
-        endCalendar.setTime(DateUtil.parse(endDate, FORMAT_STR));
-        selectedCalender.setTime(startCalendar.getTime());
-        mPrimaryColor = context.getResources().getColor(R.color.colorPrimary);
-        initDialog();
-        initView();
+        this(context,
+                resultHandler,
+                DateUtil.parse(startDate, FORMAT_STR),
+                DateUtil.parse(endDate, FORMAT_STR));
     }
 
 
@@ -115,9 +110,30 @@ public class TimeSelector {
         this.workEnd_str = workEndTime;
     }
 
+    public TimeSelector(Context context,
+                        ResultHandler resultHandler,
+                        Date startDate,
+                        Date endDate){
+        this.context = context;
+        this.handler = resultHandler;
+        startCalendar = Calendar.getInstance();
+        endCalendar = Calendar.getInstance();
+        startCalendar.setTime(startDate);
+        endCalendar.setTime(endDate);
+        selectedCalender.setTime(startCalendar.getTime());
+        mPrimaryColor = context.getResources().getColor(R.color.colorPrimary);
+        initDialog();
+        initView();
+    }
+
+    public void setWorkTime(String workStartTime, String workEndTime){
+        this.workStart_str = workStartTime;
+        this.workEnd_str = workEndTime;
+    }
+
     public void show() {
         if (startCalendar.getTime().getTime() >= endCalendar.getTime().getTime()) {
-            Toast.makeText(context, "start>end", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "开始时间不能大于结束时间", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -177,7 +193,7 @@ public class TimeSelector {
         tv_select.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                handler.handle(DateUtil.format(selectedCalender.getTime(), FORMAT_STR));
+                handler.handle(selectedCalender.getTime());
                 seletorDialog.dismiss();
             }
         });
@@ -481,6 +497,11 @@ public class TimeSelector {
         hour_pv.setSelected(defHour);
         minuteChange(false);
         minute_pv.setSelected(defMin);
+        selectedCalender.set(Calendar.YEAR, year_pv.getCurrentSelected());
+        selectedCalender.set(Calendar.MONTH, month_pv.getCurrentSelected()-1);
+        selectedCalender.set(Calendar.DAY_OF_MONTH, day_pv.getCurrentSelected());
+        selectedCalender.set(Calendar.HOUR_OF_DAY, hour_pv.getCurrentSelected());
+        selectedCalender.set(Calendar.MINUTE, minute_pv.getCurrentSelected());
     }
 
     private void monthChange(boolean anim) {

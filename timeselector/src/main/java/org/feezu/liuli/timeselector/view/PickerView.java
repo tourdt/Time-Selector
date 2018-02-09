@@ -130,6 +130,16 @@ public class PickerView extends View {
             }
     }
 
+    public int getCurrentSelected() {
+        if (mDataList == null || mDataList.size() == 0) {
+            return 0;
+        }
+        if (mCurrentSelected >= mDataList.size()) {
+            return Integer.parseInt(mDataList.get(0));
+        }
+        return Integer.parseInt(mDataList.get(mCurrentSelected));
+    }
+
 
     private void moveHeadToTail() {
         if (loop) {
@@ -345,9 +355,9 @@ public class PickerView extends View {
         loop = isLoop;
     }
 
-    public void setPrimaryColor(int color){
+    public void setPrimaryColor(int color) {
         mColorText = color;
-        if (mPaint != null){
+        if (mPaint != null) {
             mPaint.setColor(mColorText);
         }
     }

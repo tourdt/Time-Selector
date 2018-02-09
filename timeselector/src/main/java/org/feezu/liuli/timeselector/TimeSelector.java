@@ -752,8 +752,11 @@ public class TimeSelector {
     }
 
     public void setDefaultDate(String defaultDate) {
-        defaultCalender = Calendar.getInstance();
-        defaultCalender.setTime(DateUtil.parse(defaultDate, FORMAT_STR));
+        setDefaultDate(DateUtil.parse(defaultDate, FORMAT_STR));
+    }
 
+    public void setDefaultDate(Date date){
+        defaultCalender = Calendar.getInstance();
+        defaultCalender.setTime(date);
     }
 }

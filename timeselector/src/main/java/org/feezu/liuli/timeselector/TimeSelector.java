@@ -133,7 +133,7 @@ public class TimeSelector {
 
     public void show() {
         if (startCalendar.getTime().getTime() >= endCalendar.getTime().getTime()) {
-            Toast.makeText(context, "开始时间不能大于结束时间", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "start time >= end time", Toast.LENGTH_LONG).show();
             return;
         }
 

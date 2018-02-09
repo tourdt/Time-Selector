@@ -7,6 +7,9 @@ import android.view.View;
 import android.widget.Toast;
 
 import org.feezu.liuli.timeselector.TimeSelector;
+import org.feezu.liuli.timeselector.Utils.DateUtil;
+
+import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -22,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
         timeSelector = new TimeSelector(this, new TimeSelector.ResultHandler() {
             @Override
-            public void handle(String time) {
-                Toast.makeText(getApplicationContext(), time, Toast.LENGTH_LONG).show();
+            public void handle(Date time) {
+                Toast.makeText(getApplicationContext(), DateUtil.format(time, TimeSelector.FORMAT_STR), Toast.LENGTH_LONG).show();
             }
         }, "2016-01-30 00:00", "2018-12-31 00:00");
         timeSelector.setIsLoop(false);

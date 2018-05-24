@@ -30,8 +30,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }, "2016-01-30 00:00", "2018-12-31 00:00");
         timeSelector.setIsLoop(false);
+        timeSelector.setMode(TimeSelector.MODE.YMD);
         timeSelector.setCancelable(true);
-        timeSelector.setDefaultDate("2017-11-31 20:30");
+        timeSelector.setDefaultDate("2018-2-27 20:30");
         timeSelector.setPrimaryColor(0xFF458909);
 //        timeSelector.setIsLoop(false);
     }

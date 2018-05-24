@@ -32,8 +32,9 @@ public class TimeSelector {
 
     public enum SCROLLTYPE {
 
-        HOUR(1),
-        MINUTE(2);
+        DAY(1),
+        HOUR(2),
+        MINUTE(3);
 
         private SCROLLTYPE(int value) {
             this.value = value;
@@ -45,8 +46,9 @@ public class TimeSelector {
 
     public enum MODE {
 
-        YMD(1),
-        YMDHM(2);
+        YM(1),
+        YMD(2),
+        YMDHM(3);
 
         private MODE(int value) {
             this.value = value;
@@ -88,6 +90,7 @@ public class TimeSelector {
     private Calendar endCalendar;
     private TextView tv_cancle;
     private TextView tv_select, tv_title;
+    private TextView day_text;
     private TextView hour_text;
     private TextView minute_text;
 
@@ -181,6 +184,7 @@ public class TimeSelector {
         tv_cancle = (TextView) seletorDialog.findViewById(R.id.tv_cancle);
         tv_select = (TextView) seletorDialog.findViewById(R.id.tv_select);
         tv_title = (TextView) seletorDialog.findViewById(R.id.tv_title);
+        day_text = (TextView) seletorDialog.findViewById(R.id.day_text);
         hour_text = (TextView) seletorDialog.findViewById(R.id.hour_text);
         minute_text = (TextView) seletorDialog.findViewById(R.id.minute_text);
 
@@ -491,10 +495,13 @@ public class TimeSelector {
         year_pv.setSelected(defaultCalender.get(Calendar.YEAR) + "");
         monthChange(false);
         month_pv.setSelected(defMonth);
+        selectedCalender.setTime(defaultCalender.getTime());
         dayChange(false);
         day_pv.setSelected(defDay);
+        selectedCalender.setTime(defaultCalender.getTime());
         hourChange(false);
         hour_pv.setSelected(defHour);
+        selectedCalender.setTime(defaultCalender.getTime());
         minuteChange(false);
         minute_pv.setSelected(defMin);
         selectedCalender.set(Calendar.YEAR, year_pv.getCurrentSelected());
@@ -684,13 +691,23 @@ public class TimeSelector {
     public void setMode(MODE mode) {
         switch (mode.value) {
             case 1:
+                disScrollUnit(SCROLLTYPE.DAY, SCROLLTYPE.HOUR, SCROLLTYPE.MINUTE);
+                day_pv.setVisibility(View.GONE);
+
+                hour_pv.setVisibility(View.GONE);
+                minute_pv.setVisibility(View.GONE);
+                day_text.setVisibility(View.GONE);
+                hour_text.setVisibility(View.GONE);
+                minute_text.setVisibility(View.GONE);
+                break;
+            case 2:
                 disScrollUnit(SCROLLTYPE.HOUR, SCROLLTYPE.MINUTE);
                 hour_pv.setVisibility(View.GONE);
                 minute_pv.setVisibility(View.GONE);
                 hour_text.setVisibility(View.GONE);
                 minute_text.setVisibility(View.GONE);
                 break;
-            case 2:
+            case 3:
                 disScrollUnit();
                 hour_pv.setVisibility(View.VISIBLE);
                 minute_pv.setVisibility(View.VISIBLE);

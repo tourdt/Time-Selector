@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
-version = "1.1.5"
+version = "1.1.7"
 group = "com.tourdt"
 android {
     compileSdkVersion 25
@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion 11
         targetSdkVersion 22
-        versionCode 14
-        versionName "1.1.5"
+        versionCode 16
+        versionName "1.1.7"
     }
     buildTypes {
         release {
